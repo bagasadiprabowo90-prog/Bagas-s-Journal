@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { Mic, MicOff, Save, Feather, Trash2, Download, X } from 'lucide-react'
-import html2canvas from 'html2canvas'
 import './App.css'
 
 // Mock AI Refiner
@@ -179,25 +178,103 @@ function App() {
     }
   }
 
-  // Save to image function using html2canvas
+  // Save to image function using native Canvas API
   const saveImage = async () => {
-    const notebookElement = document.getElementById('notebook-canvas');
-    if (!notebookElement) {
-      alert("Area tulisan tidak ditemukan.");
+    if (!text.trim()) {
+      alert("Belum ada catatan untuk disimpan.");
       return;
     }
 
     try {
-      const canvas = await html2canvas(notebookElement, {
-        scale: 2, // Higher quality
-        useCORS: true,
-        backgroundColor: '#fdfdfd', // Ensure background isn't transparent
+      // Wait for font to load
+      await document.fonts.ready;
+
+      const LINE_H = 28;
+      const MARGIN_LEFT = 50;
+      const TEXT_LEFT = MARGIN_LEFT + 15;
+      const PADDING_RIGHT = 20;
+      const canvasWidth = 440;
+
+      // Prepare text wrapping
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.font = '500 24px Caveat, cursive';
+
+      // Word-wrap the text
+      const wrapText = (ctx, str, maxWidth) => {
+        const lines = [];
+        const paragraphs = str.split('\n');
+        for (const para of paragraphs) {
+          const words = para.split(' ');
+          let currentLine = '';
+          for (const word of words) {
+            const testLine = currentLine ? currentLine + ' ' + word : word;
+            if (ctx.measureText(testLine).width > maxWidth) {
+              if (currentLine) lines.push(currentLine);
+              currentLine = word;
+            } else {
+              currentLine = testLine;
+            }
+          }
+          lines.push(currentLine);
+        }
+        return lines;
+      };
+
+      const maxTextWidth = canvasWidth - TEXT_LEFT - PADDING_RIGHT;
+      const dateStr = 'Date: ' + new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+      const textLines = wrapText(tempCtx, text.trim(), maxTextWidth);
+
+      // Calculate canvas height: date + gap + text lines + padding
+      const totalLines = 2 + textLines.length + 2; // date + space + text + bottom padding
+      const canvasHeight = totalLines * LINE_H;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasWidth * 2; // 2x for retina
+      canvas.height = canvasHeight * 2;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(2, 2);
+
+      // Background
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // Draw horizontal lines
+      ctx.strokeStyle = '#acc7db';
+      ctx.lineWidth = 1;
+      for (let y = LINE_H; y < canvasHeight; y += LINE_H) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvasWidth, y);
+        ctx.stroke();
+      }
+
+      // Draw margin line
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(MARGIN_LEFT, 0);
+      ctx.lineTo(MARGIN_LEFT, canvasHeight);
+      ctx.stroke();
+
+      // Draw Date header
+      ctx.font = '600 24px Caveat, cursive';
+      ctx.fillStyle = '#3b82f6';
+      ctx.fillText(dateStr, TEXT_LEFT, LINE_H - 4);
+
+      // Draw text
+      ctx.font = '500 24px Caveat, cursive';
+      ctx.fillStyle = '#27272a';
+      textLines.forEach((line, i) => {
+        const y = (i + 3) * LINE_H - 4; // Start after date + gap
+        ctx.fillText(line, TEXT_LEFT, y);
       });
 
-      const image = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
+      // Export
+      const image = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
       link.href = image;
-      link.download = `SilentScript_${new Date().toISOString().split('T')[0]}.png`;
+      link.download = `BagasJournal_${new Date().toISOString().split('T')[0]}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
