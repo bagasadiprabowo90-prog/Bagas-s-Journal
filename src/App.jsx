@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Mic, MicOff, Save, Feather } from 'lucide-react'
+import { Mic, MicOff, Save, Feather, Trash2 } from 'lucide-react'
 import html2canvas from 'html2canvas'
 import './App.css'
 
@@ -48,21 +48,23 @@ function App() {
       recognition.lang = 'id-ID';
 
       recognition.onresult = (event) => {
-        let finalTranscripts = '';
-        let interimTranscripts = '';
+        let currentInterim = '';
+        let currentFinal = '';
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTranscripts += transcript + ' ';
+            currentFinal += transcript + ' ';
           } else {
-            interimTranscripts += transcript;
+            currentInterim += transcript;
           }
         }
 
-        setInterimText(interimTranscripts);
-        if (finalTranscripts) {
-          processAI(finalTranscripts);
+        setInterimText(currentInterim);
+
+        // Only process final text once per result index
+        if (currentFinal.trim().length > 0) {
+          processAI(currentFinal);
         }
       };
 
@@ -152,6 +154,14 @@ function App() {
     }
   }
 
+  // Clear text function
+  const clearText = () => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus semua catatan ini?")) {
+      setText("");
+      setInterimText("");
+    }
+  }
+
   const displayText = text + (interimText ? (text ? " " : "") + interimText : "");
 
   return (
@@ -185,6 +195,7 @@ function App() {
         className={`fab ${isRecording ? 'recording' : ''}`}
         onClick={toggleRecording}
         title={isRecording ? "Stop Recording" : "Start Recording"}
+        style={{ zIndex: 11 }}
       >
         {isRecording ? <MicOff size={28} /> : <Mic size={28} />}
       </button>
@@ -200,6 +211,19 @@ function App() {
         title="Simpan sebagai Gambar"
       >
         <Save size={24} />
+      </button>
+
+      <button
+        className="fab clear-fab"
+        onClick={clearText}
+        style={{
+          bottom: '12rem',
+          backgroundColor: '#ef4444',
+          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+        }}
+        title="Hapus Catatan"
+      >
+        <Trash2 size={24} />
       </button>
     </div>
   )
