@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Mic, MicOff, Save } from 'lucide-react'
+import { Mic, MicOff, Save, Feather } from 'lucide-react'
 import html2canvas from 'html2canvas'
 import './App.css'
 
@@ -156,7 +156,17 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="notebook" id="notebook-canvas">
+      <header className="app-header">
+        <div className="logo-container">
+          <div className="logo-icon-wrapper">
+            <Feather className="logo-icon" size={28} />
+          </div>
+          <h1 className="logo-text">Bagas Journal</h1>
+        </div>
+        <div className="app-subtitle">Powered by Silent Script</div>
+      </header>
+
+      <div className="notebook animate-fade-in" id="notebook-canvas">
         <div className="handwriting-text">
           {displayText ? (
             displayText
