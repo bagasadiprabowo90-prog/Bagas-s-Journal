@@ -235,39 +235,74 @@ function App() {
       const ctx = canvas.getContext('2d');
       ctx.scale(2, 2);
 
-      // Background
-      ctx.fillStyle = '#f8fafc';
+      // Background — slightly warm paper color
+      ctx.fillStyle = '#f5f0e8';
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-      // Draw horizontal lines
-      ctx.strokeStyle = '#acc7db';
-      ctx.lineWidth = 1;
+      // Add paper texture noise
+      for (let i = 0; i < canvasWidth * canvasHeight * 0.03; i++) {
+        const x = Math.random() * canvasWidth;
+        const y = Math.random() * canvasHeight;
+        const alpha = Math.random() * 0.04;
+        ctx.fillStyle = `rgba(0,0,0,${alpha})`;
+        ctx.fillRect(x, y, 1, 1);
+      }
+
+      // Draw horizontal lines (slightly imperfect like real paper)
       for (let y = LINE_H; y < canvasHeight; y += LINE_H) {
+        ctx.strokeStyle = `rgba(160, 190, 215, ${0.5 + Math.random() * 0.15})`;
+        ctx.lineWidth = 0.8;
         ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvasWidth, y);
+        ctx.moveTo(0, y + (Math.random() - 0.5) * 0.3);
+        ctx.lineTo(canvasWidth, y + (Math.random() - 0.5) * 0.3);
         ctx.stroke();
       }
 
       // Draw margin line
-      ctx.strokeStyle = '#cbd5e1';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(220, 160, 160, 0.5)';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(MARGIN_LEFT, 0);
       ctx.lineTo(MARGIN_LEFT, canvasHeight);
       ctx.stroke();
 
-      // Draw Date header
-      ctx.font = '600 24px Caveat, cursive';
-      ctx.fillStyle = '#3b82f6';
-      ctx.fillText(dateStr, TEXT_LEFT, LINE_H - 4);
+      // --- Character-by-character pen rendering function ---
+      const drawPenText = (str, startX, baseY, baseFontSize, baseColor) => {
+        let cursorX = startX;
+        const chars = str.split('');
 
-      // Draw text
-      ctx.font = '500 24px Caveat, cursive';
-      ctx.fillStyle = '#27272a';
+        for (let c = 0; c < chars.length; c++) {
+          const char = chars[c];
+
+          // Randomize for natural look
+          const sizeJitter = baseFontSize + (Math.random() - 0.5) * 2;
+          const yJitter = (Math.random() - 0.5) * 1.8;
+          const rotJitter = (Math.random() - 0.5) * 0.04; // radians
+          const opacity = 0.75 + Math.random() * 0.25;
+
+          ctx.save();
+          ctx.translate(cursorX, baseY + yJitter);
+          ctx.rotate(rotJitter);
+          ctx.font = `500 ${sizeJitter}px Caveat, cursive`;
+          ctx.fillStyle = baseColor.replace(')', `,${opacity})`).replace('rgb', 'rgba');
+          ctx.fillText(char, 0, 0);
+
+          // Measure to advance cursor
+          const charWidth = ctx.measureText(char).width;
+          ctx.restore();
+
+          cursorX += charWidth + (Math.random() - 0.5) * 0.8;
+        }
+      };
+
+      // Draw Date header with pen effect
+      const dateBaseY = LINE_H - 4;
+      drawPenText(dateStr, TEXT_LEFT, dateBaseY, 24, 'rgb(50, 100, 180)');
+
+      // Draw text lines with pen effect
       textLines.forEach((line, i) => {
-        const y = (i + 3) * LINE_H - 4; // Start after date + gap
-        ctx.fillText(line, TEXT_LEFT, y);
+        const y = (i + 3) * LINE_H - 4;
+        drawPenText(line, TEXT_LEFT, y, 24, 'rgb(30, 30, 35)');
       });
 
       // Export
