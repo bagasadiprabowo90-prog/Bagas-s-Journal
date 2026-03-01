@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { Mic, MicOff, Save, Feather, Trash2, Download, X } from 'lucide-react'
+import { Mic, MicOff, Save, Feather, Trash2, Download, X, BookOpen, Moon } from 'lucide-react'
+import DreamInterpreter from './DreamInterpreter'
 import './App.css'
 
 // Mock AI Refiner
@@ -24,6 +25,7 @@ function App() {
   const [text, setText] = useState("")
   const [interimText, setInterimText] = useState("")
   const [isRefining, setIsRefining] = useState(false)
+  const [activeTab, setActiveTab] = useState('journal')
 
   const recognitionRef = useRef(null)
   const [deferredPrompt, setDeferredPrompt] = useState(null)
@@ -335,58 +337,81 @@ function App() {
         </div>
       )}
 
-      <div className="notebook animate-fade-in" id="notebook-canvas">
-        <div className="date-header">
-          Date: {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
-        </div>
-        <div className="handwriting-text">
-          {displayText ? (
-            displayText
-          ) : (
-            <span className="empty-state">Mulai bicara untuk menulis di jurnal Anda...</span>
-          )}
-        </div>
+      <div className="tab-navigation">
+        <button
+          className={`tab-btn ${activeTab === 'journal' ? 'active' : ''}`}
+          onClick={() => setActiveTab('journal')}
+        >
+          <BookOpen size={16} />
+          Jurnal
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'dream' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dream')}
+        >
+          <Moon size={16} />
+          Tafsir Mimpi
+        </button>
       </div>
 
-      <div className={`refiner-status ${isRefining ? 'visible' : ''}`}>
-        <div className="spinner"></div>
-        <span>AI sedang merapikan teks...</span>
-      </div>
+      {activeTab === 'journal' ? (
+        <>
+          <div className="notebook animate-fade-in" id="notebook-canvas">
+            <div className="date-header">
+              Date: {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
+            <div className="handwriting-text">
+              {displayText ? (
+                displayText
+              ) : (
+                <span className="empty-state">Mulai bicara untuk menulis di jurnal Anda...</span>
+              )}
+            </div>
+          </div>
 
-      <button
-        className={`fab ${isRecording ? 'recording' : ''}`}
-        onClick={toggleRecording}
-        title={isRecording ? "Stop Recording" : "Start Recording"}
-        style={{ zIndex: 11 }}
-      >
-        {isRecording ? <MicOff size={28} /> : <Mic size={28} />}
-      </button>
+          <div className={`refiner-status ${isRefining ? 'visible' : ''}`}>
+            <div className="spinner"></div>
+            <span>AI sedang merapikan teks...</span>
+          </div>
 
-      <button
-        className="fab save-fab"
-        onClick={saveImage}
-        style={{
-          bottom: '7rem',
-          backgroundColor: '#10b981',
-          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)'
-        }}
-        title="Simpan sebagai Gambar"
-      >
-        <Save size={24} />
-      </button>
+          <button
+            className={`fab ${isRecording ? 'recording' : ''}`}
+            onClick={toggleRecording}
+            title={isRecording ? "Stop Recording" : "Start Recording"}
+            style={{ zIndex: 11 }}
+          >
+            {isRecording ? <MicOff size={28} /> : <Mic size={28} />}
+          </button>
 
-      <button
-        className="fab clear-fab"
-        onClick={clearText}
-        style={{
-          bottom: '12rem',
-          backgroundColor: '#ef4444',
-          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
-        }}
-        title="Hapus Catatan"
-      >
-        <Trash2 size={24} />
-      </button>
+          <button
+            className="fab save-fab"
+            onClick={saveImage}
+            style={{
+              bottom: '7rem',
+              backgroundColor: '#10b981',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)'
+            }}
+            title="Simpan sebagai Gambar"
+          >
+            <Save size={24} />
+          </button>
+
+          <button
+            className="fab clear-fab"
+            onClick={clearText}
+            style={{
+              bottom: '12rem',
+              backgroundColor: '#ef4444',
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+            }}
+            title="Hapus Catatan"
+          >
+            <Trash2 size={24} />
+          </button>
+        </>
+      ) : (
+        <DreamInterpreter />
+      )}
     </div>
   )
 }

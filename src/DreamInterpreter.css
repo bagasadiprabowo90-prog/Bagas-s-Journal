@@ -1,0 +1,142 @@
+.dream-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: fadeIn 0.5s ease;
+}
+
+.dream-header {
+    text-align: center;
+}
+
+.dream-header h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0.5rem 0 0.25rem;
+}
+
+.dream-icon {
+    color: #8b5cf6;
+}
+
+.dream-subtitle {
+    font-family: var(--font-family-hw);
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.dream-input-area {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.dream-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fafafa;
+    color: #1f2937;
+    line-height: 1.6;
+}
+
+.dream-textarea:focus {
+    border-color: #8b5cf6;
+    background: #fff;
+}
+
+.dream-textarea::placeholder {
+    color: #9ca3af;
+}
+
+.dream-textarea:disabled {
+    opacity: 0.6;
+}
+
+.dream-submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.dream-submit-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.dream-submit-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.dream-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.spin-icon {
+    animation: spin 1s linear infinite;
+}
+
+.dream-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.dream-result {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.result-content {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    color: #374151;
+    line-height: 1.7;
+}
+
+.result-content p {
+    margin: 0.3rem 0;
+}
+
+.tafsir-heading {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #4c1d95;
+    margin: 1.25rem 0 0.5rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 2px solid #ede9fe;
+}
+
+.tafsir-heading:first-child {
+    margin-top: 0;
+}
