@@ -11,9 +11,11 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['logo-192x192.png', 'logo-512x512.png'],
       manifest: {
+        id: '/',
         name: 'Bagas Journal',
         short_name: 'BagasJournal',
         description: 'Aplikasi Voice Journal cerdas untuk mencatat dengan gaya tulisan tangan.',
+        start_url: '/',
         theme_color: '#3b82f6',
         background_color: '#fdfdfd',
         display: 'standalone',

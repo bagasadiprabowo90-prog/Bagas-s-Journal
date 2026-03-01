@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Mic, MicOff, Save, Feather, Trash2 } from 'lucide-react'
+import { Mic, MicOff, Save, Feather, Trash2, Download, X } from 'lucide-react'
 import html2canvas from 'html2canvas'
 import './App.css'
 
@@ -27,6 +27,38 @@ function App() {
   const [isRefining, setIsRefining] = useState(false)
 
   const recognitionRef = useRef(null)
+  const [deferredPrompt, setDeferredPrompt] = useState(null)
+  const [showInstallBanner, setShowInstallBanner] = useState(false)
+
+  // PWA Install Prompt
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // Only show if not dismissed before
+      const dismissed = localStorage.getItem('pwa_install_dismissed');
+      if (!dismissed) {
+        setShowInstallBanner(true);
+      }
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setShowInstallBanner(false);
+    }
+    setDeferredPrompt(null);
+  };
+
+  const dismissInstallBanner = () => {
+    setShowInstallBanner(false);
+    localStorage.setItem('pwa_install_dismissed', 'true');
+  };
 
   // Auto-save effect
   useEffect(() => {
@@ -175,6 +207,19 @@ function App() {
         </div>
         <div className="app-subtitle">Powered by Silent Script</div>
       </header>
+
+      {showInstallBanner && (
+        <div className="install-banner">
+          <div className="install-banner-content">
+            <Download size={20} />
+            <span>Install <strong>Bagas Journal</strong> di HP Anda!</span>
+          </div>
+          <div className="install-banner-actions">
+            <button className="install-btn" onClick={handleInstallClick}>Install</button>
+            <button className="dismiss-btn" onClick={dismissInstallBanner}><X size={16} /></button>
+          </div>
+        </div>
+      )}
 
       <div className="notebook animate-fade-in" id="notebook-canvas">
         <div className="date-header">
