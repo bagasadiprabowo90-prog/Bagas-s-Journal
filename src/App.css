@@ -1,0 +1,155 @@
+.app-container {
+  width: 100%;
+  max-width: 900px;
+  height: 100vh;
+  padding: 3rem 1rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.notebook {
+  flex-grow: 1;
+  background-color: var(--bg-color);
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-left: 80px;
+  padding-right: 30px;
+  padding-bottom: 40px;
+
+  /* Lined paper effect */
+  background-image: repeating-linear-gradient(transparent,
+      transparent calc(var(--line-height) - 1px),
+      var(--line-color) calc(var(--line-height) - 1px),
+      var(--line-color) var(--line-height));
+  background-attachment: local;
+  /* So lines scroll with content */
+}
+
+/* Margin line */
+.notebook::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 60px;
+  width: 2px;
+  background-color: var(--margin-line-color);
+  z-index: 1;
+  min-height: 100%;
+}
+
+.handwriting-text {
+  font-family: var(--font-family-hw);
+  font-size: 24px;
+  line-height: var(--line-height);
+  color: var(--ink-color);
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  /* Adjust padding top so the text sits right on the line */
+  padding-top: 5px;
+  outline: none;
+  border: none;
+  background: transparent;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  position: relative;
+  z-index: 2;
+}
+
+.empty-state {
+  color: #9ca3af;
+  opacity: 0.7;
+}
+
+.fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  cursor: pointer;
+  border: none;
+  transition: transform 0.2s, background-color 0.2s;
+  z-index: 10;
+}
+
+.fab:hover {
+  transform: scale(1.05);
+  background-color: #2563eb;
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+.fab.recording {
+  background-color: #ef4444;
+  animation: pulse 1.5s infinite;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+.refiner-status {
+  position: fixed;
+  bottom: 2.5rem;
+  right: 7rem;
+  background-color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 24px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 9;
+}
+
+.refiner-status.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
