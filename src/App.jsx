@@ -235,75 +235,131 @@ function App() {
       const ctx = canvas.getContext('2d');
       ctx.scale(2, 2);
 
-      // Background — slightly warm paper color
-      ctx.fillStyle = '#f5f0e8';
+      // Background — warm aged paper
+      ctx.fillStyle = '#ede8d8';
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-      // Add paper texture noise
-      for (let i = 0; i < canvasWidth * canvasHeight * 0.03; i++) {
+      // Paper fiber/grain texture
+      for (let i = 0; i < canvasWidth * canvasHeight * 0.06; i++) {
         const x = Math.random() * canvasWidth;
         const y = Math.random() * canvasHeight;
-        const alpha = Math.random() * 0.04;
-        ctx.fillStyle = `rgba(0,0,0,${alpha})`;
-        ctx.fillRect(x, y, 1, 1);
+        const size = Math.random() * 1.5 + 0.5;
+        const alpha = Math.random() * 0.06;
+        const shade = Math.floor(Math.random() * 60 + 140);
+        ctx.fillStyle = `rgba(${shade},${shade - 20},${shade - 40},${alpha})`;
+        ctx.fillRect(x, y, size, 0.5);
       }
 
-      // Draw horizontal lines (slightly imperfect like real paper)
-      for (let y = LINE_H; y < canvasHeight; y += LINE_H) {
-        ctx.strokeStyle = `rgba(160, 190, 215, ${0.5 + Math.random() * 0.15})`;
-        ctx.lineWidth = 0.8;
+      // Subtle coffee/age stain spots
+      for (let i = 0; i < 3; i++) {
+        const sx = Math.random() * canvasWidth;
+        const sy = Math.random() * canvasHeight;
+        const sr = 30 + Math.random() * 50;
+        const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr);
+        grad.addColorStop(0, 'rgba(180, 155, 110, 0.04)');
+        grad.addColorStop(1, 'rgba(180, 155, 110, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(sx - sr, sy - sr, sr * 2, sr * 2);
+      }
+
+      // Wave function per line — simulates paper not being flat
+      const waveAtX = (x, lineIndex) => {
+        return Math.sin(x * 0.015 + lineIndex * 1.7) * 1.5 +
+          Math.sin(x * 0.04 + lineIndex * 0.8) * 0.8;
+      };
+
+      // Draw horizontal lines — wavy like real paper
+      for (let lineIdx = 1; lineIdx * LINE_H < canvasHeight; lineIdx++) {
+        const baseY = lineIdx * LINE_H;
+        const alpha = 0.35 + Math.random() * 0.15;
+        ctx.strokeStyle = `rgba(140, 175, 210, ${alpha})`;
+        ctx.lineWidth = 0.7 + Math.random() * 0.3;
         ctx.beginPath();
-        ctx.moveTo(0, y + (Math.random() - 0.5) * 0.3);
-        ctx.lineTo(canvasWidth, y + (Math.random() - 0.5) * 0.3);
+        for (let x = 0; x <= canvasWidth; x += 2) {
+          const wy = baseY + waveAtX(x, lineIdx);
+          if (x === 0) ctx.moveTo(x, wy);
+          else ctx.lineTo(x, wy);
+        }
         ctx.stroke();
       }
 
-      // Draw margin line
-      ctx.strokeStyle = 'rgba(220, 160, 160, 0.5)';
-      ctx.lineWidth = 1.5;
+      // Draw margin line — slightly wavy
+      ctx.strokeStyle = 'rgba(200, 140, 140, 0.4)';
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.moveTo(MARGIN_LEFT, 0);
-      ctx.lineTo(MARGIN_LEFT, canvasHeight);
+      for (let y = 0; y <= canvasHeight; y += 2) {
+        const wx = MARGIN_LEFT + Math.sin(y * 0.02) * 0.5;
+        if (y === 0) ctx.moveTo(wx, y);
+        else ctx.lineTo(wx, y);
+      }
       ctx.stroke();
 
-      // --- Character-by-character pen rendering function ---
-      const drawPenText = (str, startX, baseY, baseFontSize, baseColor) => {
-        let cursorX = startX;
-        const chars = str.split('');
+      // --- Realistic pen rendering: char by char with ink bleed ---
+      const drawPenChar = (char, x, y, fontSize, inkR, inkG, inkB) => {
+        // Jitter per character
+        const sz = fontSize + (Math.random() - 0.5) * 3;
+        const yOff = (Math.random() - 0.5) * 2.5;
+        const rot = (Math.random() - 0.5) * 0.06;
+        const pressure = 0.7 + Math.random() * 0.3;
 
-        for (let c = 0; c < chars.length; c++) {
-          const char = chars[c];
+        ctx.save();
+        ctx.translate(x, y + yOff);
+        ctx.rotate(rot);
+        ctx.font = `500 ${sz}px Caveat, cursive`;
 
-          // Randomize for natural look
-          const sizeJitter = baseFontSize + (Math.random() - 0.5) * 2;
-          const yJitter = (Math.random() - 0.5) * 1.8;
-          const rotJitter = (Math.random() - 0.5) * 0.04; // radians
-          const opacity = 0.75 + Math.random() * 0.25;
+        // Ink bleed layer (shadow behind text)
+        ctx.fillStyle = `rgba(${inkR},${inkG},${inkB},${pressure * 0.15})`;
+        ctx.fillText(char, 0.5, 0.5);
+        ctx.fillText(char, -0.3, 0.3);
 
-          ctx.save();
-          ctx.translate(cursorX, baseY + yJitter);
-          ctx.rotate(rotJitter);
-          ctx.font = `500 ${sizeJitter}px Caveat, cursive`;
-          ctx.fillStyle = baseColor.replace(')', `,${opacity})`).replace('rgb', 'rgba');
-          ctx.fillText(char, 0, 0);
+        // Main ink stroke
+        ctx.fillStyle = `rgba(${inkR},${inkG},${inkB},${pressure})`;
+        ctx.fillText(char, 0, 0);
 
-          // Measure to advance cursor
-          const charWidth = ctx.measureText(char).width;
-          ctx.restore();
+        // Slight double-pass for ink density variation
+        if (Math.random() > 0.6) {
+          ctx.fillStyle = `rgba(${inkR},${inkG},${inkB},${pressure * 0.2})`;
+          ctx.fillText(char, 0.2, -0.2);
+        }
 
-          cursorX += charWidth + (Math.random() - 0.5) * 0.8;
+        const w = ctx.measureText(char).width;
+        ctx.restore();
+        return w;
+      };
+
+      const drawPenLine = (str, startX, lineBaseY, lineIndex, fontSize, r, g, b) => {
+        let cx = startX;
+        for (let i = 0; i < str.length; i++) {
+          const char = str[i];
+          const wave = waveAtX(cx, lineIndex);
+          const w = drawPenChar(char, cx, lineBaseY + wave, fontSize, r, g, b);
+          cx += w + (Math.random() - 0.5) * 1.2;
         }
       };
 
-      // Draw Date header with pen effect
-      const dateBaseY = LINE_H - 4;
-      drawPenText(dateStr, TEXT_LEFT, dateBaseY, 24, 'rgb(50, 100, 180)');
+      // Draw Date header
+      drawPenLine(dateStr, TEXT_LEFT, LINE_H - 4, 0, 24, 40, 80, 160);
 
-      // Draw text lines with pen effect
+      // Draw text lines
       textLines.forEach((line, i) => {
-        const y = (i + 3) * LINE_H - 4;
-        drawPenText(line, TEXT_LEFT, y, 24, 'rgb(30, 30, 35)');
+        const lineIndex = i + 3;
+        const y = lineIndex * LINE_H - 4;
+        drawPenLine(line, TEXT_LEFT, y, lineIndex, 24, 25, 25, 30);
       });
+
+      // Camera vignette effect (darker corners like phone photo)
+      const vigGrad = ctx.createRadialGradient(
+        canvasWidth / 2, canvasHeight / 2, canvasHeight * 0.3,
+        canvasWidth / 2, canvasHeight / 2, canvasHeight * 0.8
+      );
+      vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
+      vigGrad.addColorStop(1, 'rgba(0,0,0,0.12)');
+      ctx.fillStyle = vigGrad;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // Slight warm color overlay (camera white balance)
+      ctx.fillStyle = 'rgba(255, 248, 230, 0.08)';
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
       // Export
       const image = canvas.toDataURL('image/png');
