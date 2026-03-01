@@ -71,11 +71,14 @@ function App() {
   }, [text]);
 
   // Init Speech Recognition
+  const processedIndexRef = useRef(0);
+  const shouldRestartRef = useRef(false);
+
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
-      recognition.continuous = true;
+      recognition.continuous = false;  // Use non-continuous to avoid mobile duplication
       recognition.interimResults = true;
       recognition.lang = 'id-ID';
 
@@ -83,31 +86,45 @@ function App() {
         let currentInterim = '';
         let currentFinal = '';
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            currentFinal += transcript + ' ';
+        for (let i = 0; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            currentFinal += result[0].transcript + ' ';
           } else {
-            currentInterim += transcript;
+            currentInterim += result[0].transcript;
           }
         }
 
         setInterimText(currentInterim);
 
-        // Only process final text once per result index
         if (currentFinal.trim().length > 0) {
-          processAI(currentFinal);
+          setInterimText('');
+          processAI(currentFinal.trim());
         }
       };
 
       recognition.onerror = (event) => {
         console.error("Speech recognition error", event.error);
-        setIsRecording(false);
+        if (event.error !== 'no-speech' && event.error !== 'aborted') {
+          setIsRecording(false);
+          shouldRestartRef.current = false;
+        }
       };
 
       recognition.onend = () => {
-        setIsRecording(false);
-        setInterimText("");
+        // Auto-restart if user hasn't pressed stop
+        if (shouldRestartRef.current) {
+          try {
+            recognition.start();
+          } catch (e) {
+            console.error(e);
+            setIsRecording(false);
+            shouldRestartRef.current = false;
+          }
+        } else {
+          setIsRecording(false);
+          setInterimText('');
+        }
       };
 
       recognitionRef.current = recognition;
@@ -116,6 +133,7 @@ function App() {
     }
 
     return () => {
+      shouldRestartRef.current = false;
       if (recognitionRef.current) {
         recognitionRef.current.abort();
       }
@@ -146,14 +164,17 @@ function App() {
     }
 
     if (isRecording) {
+      shouldRestartRef.current = false;
       recognitionRef.current.stop();
       setIsRecording(false);
     } else {
       try {
+        shouldRestartRef.current = true;
         recognitionRef.current.start();
         setIsRecording(true);
       } catch (e) {
         console.error(e);
+        shouldRestartRef.current = false;
       }
     }
   }
