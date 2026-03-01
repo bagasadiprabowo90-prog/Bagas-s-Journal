@@ -1,10 +1,10 @@
 :root {
-  --line-height: 36px;
-  --ink-color: #1a1a1b;
-  --bg-color: #fdfdfd;
-  --line-color: #c0d6e4;
-  --margin-line-color: #fca5a5;
-  --font-family-hw: 'Architects Daughter', cursive;
+  --line-height: 28px;
+  --ink-color: #27272a;
+  --bg-color: #f8fafc;
+  --line-color: #acc7db;
+  --margin-line-color: #cbd5e1;
+  --font-family-hw: 'Caveat', cursive;
 }
 
 body {

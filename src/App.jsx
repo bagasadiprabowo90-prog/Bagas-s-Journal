@@ -177,6 +177,9 @@ function App() {
       </header>
 
       <div className="notebook animate-fade-in" id="notebook-canvas">
+        <div className="date-header">
+          Date: {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
+        </div>
         <div className="handwriting-text">
           {displayText ? (
             displayText
